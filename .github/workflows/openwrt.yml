@@ -46,17 +46,18 @@ jobs:
       - name: 下载固件源码
         working-directory: ./
         run: |
-          git clone https://github.com/coolsnowwolf/lede
+          git clone https://github.com/openwrt/openwrt.git lede
 
       - name: 更新和安装软件包
         run: |
           cd lede
           rm -f ./feeds.conf.default
           touch ./feeds.conf.default
-          echo "src-git packages https://github.com/coolsnowwolf/packages" >> "feeds.conf.default"
-          echo "src-git luci https://github.com/coolsnowwolf/luci" >> "feeds.conf.default"
-          echo "src-git routing https://github.com/coolsnowwolf/routing" >> "feeds.conf.default"
+          echo "src-git packages https://github.com/openwrt/packages" >> "feeds.conf.default"
+          echo "src-git luci https://github.com/openwrt/luci.git" >> "feeds.conf.default"
+          echo "src-git routing https://github.com/openwrt/routing" >> "feeds.conf.default"
           echo "src-git telephony https://github.com/openwrt/telephony.git" >> "feeds.conf.default"
+          echo "src-git video https://github.com/openwrt/video.git" >> "feeds.conf.default"
           echo "src-git zheng https://github.com/zjt37/packages.git;main" >> "feeds.conf.default"
           echo "src-git helloworld https://github.com/fw876/helloworld.git" >> "feeds.conf.default"
           ./scripts/feeds update -a
@@ -66,12 +67,13 @@ jobs:
       - name: 常用配置修改
         run: |
           cd lede
-          sed -i 's/192.168.1.1/192.168.2.3/g' package/base-files/files/bin/config_generate
-          sed -i "s/hostname='.*'/hostname='openwrt'/g" package/base-files/files/bin/config_generate
-          sed -i 's/KERNEL_PATCHVER:=6.6/KERNEL_PATCHVER:=6.12/g' ./target/linux/x86/Makefile
-          sed -i 's/os.date()/os.date("%Y-%m-%d %H:%M:%S")/g' package/lean/autocore/files/*/index.htm
-          sed -i 's/${g}.*/${a}${b}${c}${d}${e}${f}${hydrid}/g' package/lean/autocore/files/x86/autocore
+          sed -i 's/192.168.1.1/192.168.2.31/g' package/base-files/files/bin/config_generate
+          sed -i 's/GMT0/CST-8/g' package/base-files/files/bin/config_generate
+          sed -i 's/UTC/Asia\/Shanghai/g' package/base-files/files/bin/config_generate
           sed -i 's/ShadowSocksR Plus+/SSR Plus+/g' package/feeds/helloworld/luci-app-ssr-plus/luasrc/controller/shadowsocksr.lua
+          PASSWORD="password"
+          PASSWORD_HASH=$(openssl passwd -6 "$PASSWORD")
+          sed -i "s|^root:[^:]*|root:${PASSWORD_HASH}|" package/base-files/files/etc/shadow
 
       - name: 配置固件文件
         run: |
