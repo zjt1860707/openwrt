@@ -53,8 +53,8 @@ jobs:
           cd lede
           rm -f ./feeds.conf.default
           touch ./feeds.conf.default
-          echo "src-git packages https://github.com/openwrt/packages" >> "feeds.conf.default"
-          echo "src-git luci https://github.com/openwrt/luci.git" >> "feeds.conf.default"
+          echo "src-git packages https://github.com/coolsnowwolf/packages" >> "feeds.conf.default"
+          echo "src-git luci https://github.com/coolsnowwolf/luci" >> "feeds.conf.default"
           echo "src-git routing https://github.com/openwrt/routing" >> "feeds.conf.default"
           echo "src-git telephony https://github.com/openwrt/telephony.git" >> "feeds.conf.default"
           echo "src-git video https://github.com/openwrt/video.git" >> "feeds.conf.default"
@@ -70,6 +70,7 @@ jobs:
           sed -i 's/192.168.1.1/192.168.2.31/g' package/base-files/files/bin/config_generate
           sed -i 's/GMT0/CST-8/g' package/base-files/files/bin/config_generate
           sed -i 's/UTC/Asia\/Shanghai/g' package/base-files/files/bin/config_generate
+          sed -i 's/+uci-firewall/+firewall/g' feeds/luci/applications/luci-app-firewall/Makefile
           sed -i 's/ShadowSocksR Plus+/SSR Plus+/g' package/feeds/helloworld/luci-app-ssr-plus/luasrc/controller/shadowsocksr.lua
           PASSWORD="password"
           PASSWORD_HASH=$(openssl passwd -6 "$PASSWORD")
@@ -248,6 +249,7 @@ jobs:
           CONFIG_PACKAGE_luci-proto-ppp=y
           CONFIG_PACKAGE_luci-theme-bootstrap=y
           CONFIG_PACKAGE_luci-theme-kucat=y
+          CONFIG_PACKAGE_luci-theme-atmaterial_new=y
           CONFIG_PACKAGE_microsocks=y
           CONFIG_PACKAGE_mosdns=y
           CONFIG_PACKAGE_mosh-client=y
