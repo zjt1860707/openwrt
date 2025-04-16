@@ -222,6 +222,7 @@ jobs:
           CONFIG_PACKAGE_luci-lib-nixio=y
           CONFIG_PACKAGE_luci-lua-runtime=y
           CONFIG_PACKAGE_luci-theme-kucat=y
+          CONFIG_PACKAGE_luci-theme-atmaterial_new=y
           CONFIG_PACKAGE_microsocks=y
           CONFIG_PACKAGE_mosdns=y
           CONFIG_PACKAGE_mosh-client=y
