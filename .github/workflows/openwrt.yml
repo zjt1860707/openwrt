@@ -53,6 +53,7 @@ jobs:
           cd lede
           echo "src-git zheng https://github.com/zjt37/packages.git;main" >> "feeds.conf.default"
           echo "src-git helloworld https://github.com/fw876/helloworld.git" >> "feeds.conf.default"
+          ./scripts/feeds update -a
           ./scripts/feeds install -a
           ./scripts/feeds install -a
 
