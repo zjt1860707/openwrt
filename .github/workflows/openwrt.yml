@@ -48,12 +48,20 @@ jobs:
         run: |
           git clone https://github.com/immortalwrt/immortalwrt.git lede
 
-      - name: 更新和安装软件包
+      - name: 更新软件包
         run: |
           cd lede
           echo "src-git zheng https://github.com/zjt37/packages.git;main" >> "feeds.conf.default"
           echo "src-git helloworld https://github.com/fw876/helloworld.git" >> "feeds.conf.default"
           ./scripts/feeds update -a
+
+      - name: 安装软件包
+        run: |
+          rm -rf ./lede/feeds/luci/collections
+          git clone  https://github.com/coolsnowwolf/luci.git
+          cp -r ./luci/collections ./lede/feeds/luci/
+          rm -rf ./luci
+          cd lede
           ./scripts/feeds install -a
           ./scripts/feeds install -a
 
