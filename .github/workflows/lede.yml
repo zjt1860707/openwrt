@@ -1,10 +1,10 @@
-name: 编译openwrt固件
+name: 编译openwrt固
 
 on:
   schedule:
     - cron: '0 1 * * 5'  # 每星期五 UTC 时间 01:00 触发
       timezone: 'Asia/Shanghai' 
-      workflow_dispatch:
+    - workflow_dispatch:
     
 jobs:
   build:
