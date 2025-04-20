@@ -1,11 +1,15 @@
 name: 编译openwrt固
 
 on:
-  workflow_dispatch:
   schedule:
      - cron: '0 1 * * 5'  # 每星期五 UTC 时间 01:00 触发
       timezone: 'Asia/Shanghai' 
-
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: '输入运行原因（可选）'
+        required: false
+        default: '手动触发运行'
     
 jobs:
   build:
