@@ -175,6 +175,7 @@ jobs:
           CONFIG_PACKAGE_luci-i18n-passwall2-zh-cn=y
           # CONFIG_PACKAGE_luci-lib-fs is not set
           CONFIG_PACKAGE_luci-theme-material=y
+          CONFIG_PACKAGE_luci-theme-atmaterial_new=y
           # CONFIG_PACKAGE_miniupnpd is not set
           CONFIG_PACKAGE_msgpack-c=y
           CONFIG_PACKAGE_nftables-json=y
