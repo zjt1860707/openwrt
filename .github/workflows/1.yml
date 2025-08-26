@@ -1,7 +1,7 @@
 name: Build CMFA with Mihomo Smart Core
 
 on:
-  workflow_dispatch:  # 手动触发
+  workflow_dispatch:
   push:
     branches: [ main ]
 
@@ -29,22 +29,21 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
 
-    # 4. 自动下载最新 Mihomo smart 内核，并判断是否 gzip
-    - name: Download latest Mihomo Smart cores
+    # 4. 安装 jq 用于解析 JSON
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+
+    # 5. 下载 arm64-v8a smart 内核
+    - name: Download latest Mihomo Smart core (arm64-v8a)
       run: |
         ASSETS_BIN_PATH="cmfa-source/app/src/main/jniLibs"
-        mkdir -p "$ASSETS_BIN_PATH/arm64-v8a" "$ASSETS_BIN_PATH/armeabi-v7a"
+        mkdir -p "$ASSETS_BIN_PATH/arm64-v8a"
 
-        # 获取最新 Release JSON
         RELEASE_JSON=$(curl -s https://api.github.com/repos/vernesong/mihomo/releases/latest)
+        ARM64_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | test("smart.*android-arm64-v8a")) | .browser_download_url')
+        echo "ARM64_URL=$ARM64_URL"
 
-        # 抓取 smart 内核下载链接
-        ARM64_URL=$(echo "$RELEASE_JSON" | grep "browser_download_url" | grep "android-arm64-v8a" | grep "smart" | cut -d '"' -f 4)
-        ARMV7_URL=$(echo "$RELEASE_JSON" | grep "browser_download_url" | grep "android-armv7" | grep "smart" | cut -d '"' -f 4)
-
-        echo "Downloading ARM64 from $ARM64_URL"
         curl -L -f "$ARM64_URL" -o /tmp/arm64.bin
-        # 判断是否 gzip 压缩
         if file /tmp/arm64.bin | grep -q "gzip"; then
           gunzip -f /tmp/arm64.bin
           mv /tmp/arm64 "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
@@ -53,25 +52,15 @@ jobs:
         fi
         chmod +x "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
 
-        echo "Downloading ARMv7 from $ARMV7_URL"
-        curl -L -f "$ARMV7_URL" -o /tmp/armv7.bin
-        if file /tmp/armv7.bin | grep -q "gzip"; then
-          gunzip -f /tmp/armv7.bin
-          mv /tmp/armv7 "$ASSETS_BIN_PATH/armeabi-v7a/mihomo"
-        else
-          mv /tmp/armv7.bin "$ASSETS_BIN_PATH/armeabi-v7a/mihomo"
-        fi
-        chmod +x "$ASSETS_BIN_PATH/armeabi-v7a/mihomo"
+        echo "Downloaded and replaced ARM64 smart core successfully!"
 
-        echo "Downloaded and replaced Mihomo smart cores successfully!"
-
-    # 5. 构建 APK
+    # 6. 构建 APK
     - name: Build APK
       run: |
         cd cmfa-source
         ./gradlew clean assembleRelease
 
-    # 6. 上传 APK 到 Actions Artifact (v4)
+    # 7. 上传 APK 到 Actions Artifact (v4)
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
