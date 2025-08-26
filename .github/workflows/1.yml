@@ -1,4 +1,4 @@
-name: Build CMFA with Mihomo Smart Core
+name: Build CMFA with Mihomo Smart Core (Debug)
 
 on:
   workflow_dispatch:
@@ -35,23 +35,28 @@ jobs:
         ASSETS_BIN_PATH="cmfa-source/app/src/main/jniLibs"
         mkdir -p "$ASSETS_BIN_PATH/arm64-v8a"
 
-        # 下载并解压
-        curl -L -f "https://github.com/vernesong/mihomo/releases/download/Prerelease-Alpha/mihomo-android-arm64-v8-alpha-smart-627d6e2.gz" -o /tmp/smart_core.gz
+        # 指定下载链接
+        SMART_CORE_URL="https://github.com/vernesong/mihomo/releases/download/Prerelease-Alpha/mihomo-android-arm64-v8-alpha-smart-627d6e2.gz"
+
+        echo "Downloading ARM64 Smart Core from $SMART_CORE_URL..."
+        curl -L -f "$SMART_CORE_URL" -o /tmp/smart_core.gz
+
+        # 解压并替换
         gunzip -f /tmp/smart_core.gz
         mv /tmp/smart_core "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
         chmod +x "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
 
         echo "Downloaded and replaced ARM64 smart core successfully!"
 
-    # 5. 构建 APK
-    - name: Build APK
+    # 5. 构建 APK (Debug 版本)
+    - name: Build APK (Debug)
       run: |
         cd cmfa-source
-        ./gradlew clean assembleRelease
+        ./gradlew clean assembleDebug
 
-    # 6. 上传 APK 到 Actions Artifact (v4)
+    # 6. 上传 APK 到 Actions Artifact
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: cmfa-smart-apk
-        path: cmfa-source/app/build/outputs/apk/release/*.apk
+        path: cmfa-source/app/build/outputs/apk/debug/*.apk
