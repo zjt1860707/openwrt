@@ -29,62 +29,27 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
 
-    # 4. 安装 jq 用于解析 JSON
-    - name: Install jq
-      run: sudo apt-get update && sudo apt-get install -y jq
-
-    # 5. 下载 arm64-v8a smart 内核
-    - name: Download latest Mihomo Smart core (arm64-v8a)
+    # 4. 下载并替换 ARM64-v8a 内核
+    - name: Download Mihomo Smart Core (arm64-v8a)
       run: |
         ASSETS_BIN_PATH="cmfa-source/app/src/main/jniLibs"
         mkdir -p "$ASSETS_BIN_PATH/arm64-v8a"
 
-        echo "Fetching latest release JSON..."
-        RELEASE_JSON=$(curl -s -H "Accept: application/vnd.github+json" https://api.github.com/repos/vernesong/mihomo/releases/latest)
-
-        # 检查 assets 是否存在
-        ASSET_COUNT=$(echo "$RELEASE_JSON" | jq '.assets | length')
-        if [ "$ASSET_COUNT" -eq 0 ]; then
-          echo "Error: No assets found in latest release!"
-          exit 1
-        fi
-
-        # 打印所有 asset 名称，方便调试
-        echo "Assets in latest release:"
-        echo "$RELEASE_JSON" | jq -r '.assets[].name'
-
-        # 匹配 arm64 smart 内核（宽松匹配）
-        ARM64_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | test("smart.*arm64")) | .browser_download_url')
-        if [ -z "$ARM64_URL" ]; then
-          echo "Error: Could not find arm64 smart core download URL!"
-          exit 1
-        fi
-        echo "Downloading ARM64 from $ARM64_URL"
-
-        # 下载
-        curl -L -f "$ARM64_URL" -o /tmp/arm64.bin
-
-        # 判断是否 gzip
-        if file /tmp/arm64.bin | grep -q "gzip"; then
-          gunzip -f /tmp/arm64.bin
-          mv /tmp/arm64 "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
-        else
-          mv /tmp/arm64.bin "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
-        fi
+        # 下载并解压
+        curl -L -f "https://github.com/vernesong/mihomo/releases/download/Prerelease-Alpha/mihomo-android-arm64-v8-alpha-smart-627d6e2.gz" -o /tmp/smart_core.gz
+        gunzip -f /tmp/smart_core.gz
+        mv /tmp/smart_core "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
         chmod +x "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
-
-        # 输出文件信息
-        ls -lh "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
 
         echo "Downloaded and replaced ARM64 smart core successfully!"
 
-    # 6. 构建 APK
+    # 5. 构建 APK
     - name: Build APK
       run: |
         cd cmfa-source
         ./gradlew clean assembleRelease
 
-    # 7. 上传 APK 到 Actions Artifact (v4)
+    # 6. 上传 APK 到 Actions Artifact (v4)
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
