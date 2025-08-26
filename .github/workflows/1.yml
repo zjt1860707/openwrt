@@ -18,12 +18,12 @@ jobs:
         ref: main
         path: cmfa-source
 
-    # 2. 设置 JDK 17
-    - name: Set up JDK 17
+    # 2. 设置 JDK 21（适配项目源码要求）
+    - name: Set up JDK 21
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
-        java-version: '17'
+        java-version: '21'
 
     # 3. 设置 Android SDK
     - name: Set up Android SDK
@@ -35,7 +35,7 @@ jobs:
         ASSETS_BIN_PATH="cmfa-source/app/src/main/jniLibs"
         mkdir -p "$ASSETS_BIN_PATH/arm64-v8a"
 
-        # 指定下载链接
+        # 下载指定内核
         SMART_CORE_URL="https://github.com/vernesong/mihomo/releases/download/Prerelease-Alpha/mihomo-android-arm64-v8-alpha-smart-627d6e2.gz"
 
         echo "Downloading ARM64 Smart Core from $SMART_CORE_URL..."
