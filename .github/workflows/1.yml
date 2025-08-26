@@ -14,7 +14,7 @@ jobs:
     - name: Checkout CMFA source
       uses: actions/checkout@v3
       with:
-        repository: MetaCubeX/ClashMetaForAndroid  # 原仓库地址
+        repository: MetaCubeX/ClashMetaForAndroid
         ref: main
         path: cmfa-source
 
@@ -29,23 +29,32 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
 
-    # 4. 下载 vernesong/mihomo smart 内核
-    - name: Download Mihomo Smart cores
+    # 4. 自动下载最新 Mihomo smart 内核
+    - name: Download latest Mihomo Smart cores
       run: |
         ASSETS_BIN_PATH="cmfa-source/app/src/main/jniLibs"
         mkdir -p "$ASSETS_BIN_PATH/arm64-v8a" "$ASSETS_BIN_PATH/armeabi-v7a"
 
-        # arm64-v8a
-        curl -L https://github.com/vernesong/mihomo/releases/latest/download/mihomo-smart-android-arm64-v8a.gz -o /tmp/arm64.gz
+        # 获取最新 Release JSON
+        RELEASE_JSON=$(curl -s https://api.github.com/repos/vernesong/mihomo/releases/latest)
+
+        # 抓取 smart 内核下载链接
+        ARM64_URL=$(echo "$RELEASE_JSON" | grep "browser_download_url" | grep "android-arm64-v8a" | grep "smart" | cut -d '"' -f 4)
+        ARMV7_URL=$(echo "$RELEASE_JSON" | grep "browser_download_url" | grep "android-armv7" | grep "smart" | cut -d '"' -f 4)
+
+        echo "Downloading ARM64 from $ARM64_URL"
+        curl -L -f "$ARM64_URL" -o /tmp/arm64.gz
         gunzip -f /tmp/arm64.gz
         mv /tmp/mihomo-smart-android-arm64-v8a "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
         chmod +x "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
 
-        # armeabi-v7a
-        curl -L https://github.com/vernesong/mihomo/releases/latest/download/mihomo-smart-android-armv7.gz -o /tmp/armv7.gz
+        echo "Downloading ARMv7 from $ARMV7_URL"
+        curl -L -f "$ARMV7_URL" -o /tmp/armv7.gz
         gunzip -f /tmp/armv7.gz
         mv /tmp/mihomo-smart-android-armv7 "$ASSETS_BIN_PATH/armeabi-v7a/mihomo"
         chmod +x "$ASSETS_BIN_PATH/armeabi-v7a/mihomo"
+
+        echo "Downloaded and replaced Mihomo smart cores successfully!"
 
     # 5. 构建 APK
     - name: Build APK
