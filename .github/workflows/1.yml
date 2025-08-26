@@ -53,9 +53,9 @@ jobs:
         cd cmfa-source
         ./gradlew clean assembleRelease
 
-    # 6. 上传 APK 到 Actions Artifact
+    # 6. 上传 APK 到 Actions Artifact (v4)
     - name: Upload APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cmfa-smart-apk
         path: cmfa-source/app/build/outputs/apk/release/*.apk
