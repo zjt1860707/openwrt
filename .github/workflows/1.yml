@@ -29,7 +29,7 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
 
-    # 4. 自动下载最新 Mihomo smart 内核
+    # 4. 自动下载最新 Mihomo smart 内核，并判断是否 gzip
     - name: Download latest Mihomo Smart cores
       run: |
         ASSETS_BIN_PATH="cmfa-source/app/src/main/jniLibs"
@@ -43,15 +43,24 @@ jobs:
         ARMV7_URL=$(echo "$RELEASE_JSON" | grep "browser_download_url" | grep "android-armv7" | grep "smart" | cut -d '"' -f 4)
 
         echo "Downloading ARM64 from $ARM64_URL"
-        curl -L -f "$ARM64_URL" -o /tmp/arm64.gz
-        gunzip -f /tmp/arm64.gz
-        mv /tmp/mihomo-smart-android-arm64-v8a "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
+        curl -L -f "$ARM64_URL" -o /tmp/arm64.bin
+        # 判断是否 gzip 压缩
+        if file /tmp/arm64.bin | grep -q "gzip"; then
+          gunzip -f /tmp/arm64.bin
+          mv /tmp/arm64 "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
+        else
+          mv /tmp/arm64.bin "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
+        fi
         chmod +x "$ASSETS_BIN_PATH/arm64-v8a/mihomo"
 
         echo "Downloading ARMv7 from $ARMV7_URL"
-        curl -L -f "$ARMV7_URL" -o /tmp/armv7.gz
-        gunzip -f /tmp/armv7.gz
-        mv /tmp/mihomo-smart-android-armv7 "$ASSETS_BIN_PATH/armeabi-v7a/mihomo"
+        curl -L -f "$ARMV7_URL" -o /tmp/armv7.bin
+        if file /tmp/armv7.bin | grep -q "gzip"; then
+          gunzip -f /tmp/armv7.bin
+          mv /tmp/armv7 "$ASSETS_BIN_PATH/armeabi-v7a/mihomo"
+        else
+          mv /tmp/armv7.bin "$ASSETS_BIN_PATH/armeabi-v7a/mihomo"
+        fi
         chmod +x "$ASSETS_BIN_PATH/armeabi-v7a/mihomo"
 
         echo "Downloaded and replaced Mihomo smart cores successfully!"
